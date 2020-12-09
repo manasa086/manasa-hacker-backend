@@ -1,10 +1,6 @@
 const express = require('express');
 const path = require('path');
 const cors=require('cors');
-const bcrypt=require('bcryptjs');
-const clientID="1048344310726-tdd7433nulur0gpdd211i6ju559lbecf.apps.googleusercontent.com";
-const clientSecret="tgpfoP3REfRHu9UKH_K3UX3_"
-const refreshToken="1//04UREqJnu0-BoCgYIARAAGAQSNwF-L9Ir3OTv8fFeY-B8JknXRoP9jqUlFagS_paxZdynjnFmMwXfT5N6lXdLvn2qt2FXQzFJ0Bs"
 var mongodb=require("mongodb");
 var MongoClient=mongodb.MongoClient;
 var url="mongodb+srv://honey:hani@143@cluster0.f15hv.mongodb.net/?retryWrites=true&w=majority";
@@ -12,47 +8,14 @@ var fs=require('fs');
 const app = express();
 const PORT = process.env.PORT || 8080; // Step 1
 var dbname="hacker";
-const nodemailer=require("nodemailer");
-const jwt = require("jsonwebtoken");
-const client_URL="http://localhost:3000/Email/:user";
-const client_URL_seller="http://localhost:3000/Email/:seller";
-const forgot_client_URL="http://localhost:3000/ForgotPassword/:user";
-const forgot_client_URL_seller="http://localhost:3000/ForgotPassword/:seller";
-const { google } = require("googleapis");
-const OAuth2 = google.auth.OAuth2;
+
 require("dotenv").config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors())
 app.use('/', express.static(path.join(__dirname, '/public')));
 app.get("/", express.static(path.join(__dirname, "./public")));
-const gmail_user="manasa.somisetty06@gmail.com";
-// const clientID=process.env.clientID;
-// const clientSecret=process.env.clientSecret;
-// //const refreshToken=process.env.refreshToken;
 
-const oauth2Client = new OAuth2(
-    clientID,
-    clientSecret,
-    "https://developers.google.com/oauthplayground" // Redirect URL
-  );
-  
-  oauth2Client.setCredentials({
-    refresh_token: refreshToken
-  });
-  const accessToken = oauth2Client.getAccessToken()
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: "OAuth2",
-      user: gmail_user,
-      clientId: clientID,
-      clientSecret: clientSecret,
-      refreshToken: refreshToken,
-      accessToken: accessToken
-    }
-  });
 
   app.get("/getteamnames",(req,res)=>{
     MongoClient.connect(url,function(err,client)
@@ -76,6 +39,30 @@ const oauth2Client = new OAuth2(
                 res.json({message:data})
             }
         })
+    })
+})
+app.post("/getteamnamedata",(req,res)=>{
+    MongoClient.connect(url,async function(err,client){
+        if(err)
+        {
+            console.log("Error while connecting to MongoDB Atlas",err);
+        }
+        try{
+             var db=client.db(dbname);
+             var findData1=await db.collection("teamnames").find({"team_name":
+             { $regex: new RegExp("^" + req.body.team_name.toLowerCase(), "i") } }).toArray();
+            client.close();
+            res.json({
+                message:findData1
+            })
+        }
+        catch(error)
+        {
+            client.close();
+            res.json({
+                message:error
+            })
+        }
     })
 })
 app.put("/assignwinner",(req,res)=>{
