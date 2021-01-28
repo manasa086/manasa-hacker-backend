@@ -3,7 +3,7 @@ const path = require('path');
 const cors=require('cors');
 var mongodb=require("mongodb");
 var MongoClient=mongodb.MongoClient;
-var url="mongodb+srv://honey:hani@143@cluster0.f15hv.mongodb.net/?retryWrites=true&w=majority";
+var url=process.env.url;
 var fs=require('fs');
 const app = express();
 const PORT = process.env.PORT || 8080; // Step 1
@@ -50,7 +50,7 @@ app.post("/getteamnamedata",(req,res)=>{
         try{
              var db=client.db(dbname);
              var findData1=await db.collection("teamnames").find({"team_name":
-             { $regex: new RegExp("^" + req.body.team_name.toLowerCase(), "i") } }).toArray();
+             { $regex: new RegExp("^" + req.body.team_name.toLowerCase()+ "$", "i") } }).toArray();
             client.close();
             res.json({
                 message:findData1
